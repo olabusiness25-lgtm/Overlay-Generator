@@ -1,6 +1,4 @@
 // api/generate-text.js
-import { createCanvas } from 'canvas';
-
 export default async function handler(req, res) {
   // Set CORS headers
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -22,56 +20,64 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'Text parameter is required' });
     }
 
-    // Create canvas
-    const canvas = createCanvas(width, height);
-    const ctx = canvas.getContext('2d');
-    
-    // Clear canvas with transparent background
-    ctx.clearRect(0, 0, width, height);
-    
-    // Set font
-    ctx.font = `bold ${fontSize}px Arial, sans-serif`;
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    
-    const centerX = width / 2;
-    const centerY = height / 2;
-    
-    // Create metallic gradient
-    const gradient = ctx.createLinearGradient(0, centerY - fontSize/2, 0, centerY + fontSize/2);
-    gradient.addColorStop(0, '#E8E8E8');
-    gradient.addColorStop(0.2, '#FFFFFF');
-    gradient.addColorStop(0.4, '#C0C0C0');
-    gradient.addColorStop(0.6, '#A0A0A0');
-    gradient.addColorStop(0.8, '#808080');
-    gradient.addColorStop(1, '#606060');
-    
-    // Draw text shadow (black)
-    ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
-    ctx.fillText(text, centerX + 3, centerY + 3);
-    
-    // Draw red outline
-    ctx.strokeStyle = '#FF0000';
-    ctx.lineWidth = 4;
-    ctx.strokeText(text, centerX, centerY);
-    
-    // Draw metallic fill
-    ctx.fillStyle = gradient;
-    ctx.fillText(text, centerX, centerY);
-    
-    // Add inner highlight
-    ctx.strokeStyle = 'rgba(255, 255, 255, 0.7)';
-    ctx.lineWidth = 1;
-    ctx.strokeText(text, centerX, centerY);
-    
-    // Convert to base64
-    const buffer = canvas.toBuffer('image/png');
-    const base64 = buffer.toString('base64');
+    // Generate SVG with metallic text effect
+    const svg = `
+      <svg width="${width}" height="${height}" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <!-- Metallic gradient -->
+          <linearGradient id="metallic" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" style="stop-color:#E8E8E8;stop-opacity:1" />
+            <stop offset="20%" style="stop-color:#FFFFFF;stop-opacity:1" />
+            <stop offset="40%" style="stop-color:#C0C0C0;stop-opacity:1" />
+            <stop offset="60%" style="stop-color:#A0A0A0;stop-opacity:1" />
+            <stop offset="80%" style="stop-color:#808080;stop-opacity:1" />
+            <stop offset="100%" style="stop-color:#606060;stop-opacity:1" />
+          </linearGradient>
+          
+          <!-- Drop shadow filter -->
+          <filter id="dropshadow" x="-20%" y="-20%" width="140%" height="140%">
+            <feDropShadow dx="3" dy="3" stdDeviation="2" flood-color="rgba(0,0,0,0.5)"/>
+          </filter>
+        </defs>
+        
+        <!-- Main text -->
+        <text x="${width/2}" y="${height/2}" 
+              font-family="Arial, sans-serif" 
+              font-size="${fontSize}" 
+              font-weight="bold" 
+              text-anchor="middle" 
+              dominant-baseline="middle"
+              fill="url(#metallic)" 
+              stroke="#FF0000" 
+              stroke-width="4"
+              filter="url(#dropshadow)">
+          ${text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')}
+        </text>
+        
+        <!-- Inner highlight -->
+        <text x="${width/2}" y="${height/2}" 
+              font-family="Arial, sans-serif" 
+              font-size="${fontSize}" 
+              font-weight="bold" 
+              text-anchor="middle" 
+              dominant-baseline="middle"
+              fill="none" 
+              stroke="rgba(255,255,255,0.7)" 
+              stroke-width="1">
+          ${text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')}
+        </text>
+      </svg>
+    `;
+
+    // Convert SVG to base64
+    const base64 = Buffer.from(svg).toString('base64');
+    const dataUrl = `data:image/svg+xml;base64,${base64}`;
     
     return res.status(200).json({
       success: true,
-      image: `data:image/png;base64,${base64}`,
-      downloadUrl: `data:image/png;base64,${base64}`
+      image: dataUrl,
+      downloadUrl: dataUrl,
+      svg: svg
     });
     
   } catch (error) {
