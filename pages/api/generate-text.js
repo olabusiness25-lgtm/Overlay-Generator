@@ -20,50 +20,38 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'Text parameter is required' });
     }
 
-    // Generate SVG with metallic text effect
+    // Generate SVG with System font style - white text with blue outline
     const svg = `
       <svg width="${width}" height="${height}" xmlns="http://www.w3.org/2000/svg">
         <defs>
-          <!-- Metallic gradient -->
-          <linearGradient id="metallic" x1="0%" y1="0%" x2="0%" y2="100%">
-            <stop offset="0%" style="stop-color:#E8E8E8;stop-opacity:1" />
-            <stop offset="20%" style="stop-color:#FFFFFF;stop-opacity:1" />
-            <stop offset="40%" style="stop-color:#C0C0C0;stop-opacity:1" />
-            <stop offset="60%" style="stop-color:#A0A0A0;stop-opacity:1" />
-            <stop offset="80%" style="stop-color:#808080;stop-opacity:1" />
-            <stop offset="100%" style="stop-color:#606060;stop-opacity:1" />
-          </linearGradient>
-          
           <!-- Drop shadow filter -->
           <filter id="dropshadow" x="-20%" y="-20%" width="140%" height="140%">
-            <feDropShadow dx="3" dy="3" stdDeviation="2" flood-color="rgba(0,0,0,0.5)"/>
+            <feDropShadow dx="2" dy="2" stdDeviation="2" flood-color="rgba(0,0,0,0.5)"/>
           </filter>
         </defs>
         
-        <!-- Main text -->
+        <!-- Background stroke (blue outline) -->
         <text x="${width/2}" y="${height/2}" 
-              font-family="Arial, sans-serif" 
+              font-family="system-ui, -apple-system, BlinkMacSystemFont, Arial, sans-serif" 
               font-size="${fontSize}" 
-              font-weight="bold" 
+              font-weight="800" 
               text-anchor="middle" 
               dominant-baseline="middle"
-              fill="url(#metallic)" 
-              stroke="#FF0000" 
-              stroke-width="4"
+              fill="none" 
+              stroke="#1e90ff" 
+              stroke-width="10"
               filter="url(#dropshadow)">
           ${text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')}
         </text>
         
-        <!-- Inner highlight -->
+        <!-- White text fill -->
         <text x="${width/2}" y="${height/2}" 
-              font-family="Arial, sans-serif" 
+              font-family="system-ui, -apple-system, BlinkMacSystemFont, Arial, sans-serif" 
               font-size="${fontSize}" 
-              font-weight="bold" 
+              font-weight="800" 
               text-anchor="middle" 
               dominant-baseline="middle"
-              fill="none" 
-              stroke="rgba(255,255,255,0.7)" 
-              stroke-width="1">
+              fill="white">
           ${text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')}
         </text>
       </svg>
