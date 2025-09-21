@@ -4,8 +4,12 @@
   "description": "Generate text overlays for video production",
   "main": "api/generate-text.js",
   "scripts": {
-    "dev": "vercel dev",
-    "build": "echo 'No build step required'"
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start"
+  },
+  "dependencies": {
+    "next": "^14.0.0"
   },
   "engines": {
     "node": "22.x"
